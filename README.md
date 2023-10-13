@@ -116,6 +116,12 @@ import {immer} from "zustand/middleware/immer
 store = immer(store)
 ```
 
+##### Adding the three middlewares
+
+```React
+store = immer(devtools(persist(store)))
+```
+
 ### Auto Generating Selectors
 
 c: createSelectors.jsx
@@ -176,3 +182,54 @@ const { addSmallCat, addBigCat } = useAnimalStore((state) => ({
 
 <br>
 because in our example above we're awlays returning an object
+
+### Subscribe
+
+- Global state notification without rerendering a component<
+- <b>situation:</b> say we want CardHeader component to add "Full" when food > 10 else "Hungry"
+- <b>problem:</b> since we're referring to food that in state everytime the food changes value it rerenders our component
+- that's when suscribe come in.
+
+```React
+const [bearStatus, setBearStatus] = useState("hungry")
+useEffect(() => {
+  const unsub = useAnimalStore.subscribe((state, prevState) => {
+    if(prevState.food <= 5 && state.food > 5){
+      setBearStatus("full")
+    }elseif(prevState.food > 5 state.food <= 5){
+      setBearStatus("hungry")
+    }
+  })
+  return unsub
+}, []);
+
+// or use subscribeWithSelector
+// OR REFERENCE THE FOOD WITH useAnimal.getState().food -> this is not reactive
+```
+
+### Working with async data
+
+```React
+const useStore = create((set) => ({
+  Votes: {},
+  fetch: async (voting) => {
+    const response = await fetch(voting)
+    set({ Votes: await response.json() })
+  },
+}))
+```
+
+### Practice with no store actions
+The recommended usage is to colocate actions and states within the store (let your actions be located together with your state).
+
+```React
+export const useBoundStore = create(() => ({
+  count: 0,
+  text: 'hello',
+}))
+
+export const inc = () =>
+  useBoundStore.setState((state) => ({ count: state.count + 1 }))
+
+export const setText = (text) => useBoundStore.setState({ text })
+```
